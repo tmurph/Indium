@@ -37,6 +37,11 @@
 (declare-function indium-client-connect "indium-client.el")
 (declare-function indium-client-disconnect "indium-client.el")
 
+(defcustom indium-nodejs-client-closes-server nil
+  "When non-nil, closing the indium client also closes indium's inferior NodeJS server."
+  :group 'indium-nodejs
+  :type 'boolean)
+
 (defun indium-launch-nodejs (conf)
   "Start a NodeJS process.
 
@@ -105,6 +110,18 @@ disconnect from the process."
         ;; "Waiting for the debugger to disconnect" message and then do so.
         (setq connected nil)
         (indium-client-disconnect))))))
+
+(defun indium-nodejs--maybe-close-nodejs ()
+  "Stop indium's inferior NodeJS server process.
+
+However, this does nothing if `indium-nodejs-client-closes-server' is nil."
+  (when indium-nodejs-client-closes-server
+    (let* ((proc (get-process "indium-nodejs-process"))
+           (buf (and proc (process-buffer proc))))
+      (when (process-live-p proc) (kill-process proc))
+      (when (buffer-live-p buf) (kill-buffer buf)))))
+
+(add-hook 'indium-client-closed-hook #'indium-nodejs--maybe-close-nodejs t)
 
 (provide 'indium-nodejs)
 ;;; indium-nodejs.el ends here
