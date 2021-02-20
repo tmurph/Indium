@@ -107,7 +107,10 @@ otherwise use Node's default port (9229)."
 
 Intended to be run as part of the inferior NodeJS process sentinel."
   (when (not (process-live-p proc))
-    (indium-quit)))
+    (indium-quit)
+    (setq indium-nodejs--debugger-connected nil
+          indium-nodejs--project-file nil
+          indium-nodejs--project-name nil)))
 
 (defun indium-nodejs--inferior-node-filter-escape-codes (output)
   "Remove escape codes that the inferior NodeJS server emits."
